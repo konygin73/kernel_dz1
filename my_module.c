@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/stat.h>
@@ -35,12 +37,12 @@ static const struct kernel_param_ops index_ops = {
     .set = param_index_set,
 };
 
-module_param_cb(index, &index_ops, &g_index, 0200);
-MODULE_PARM_DESC(index, "Параметр index (диапазон: 0-MAX_INDEX_STR)");
+module_param_cb(idx, &index_ops, &g_index, 0200);
+MODULE_PARM_DESC(idx, "Параметр index (диапазон: 0-MAX_INDEX_STR)");
 
 
 
-static char g_message[BUFF_SIZE] = "Default string";
+static char g_message[BUFF_SIZE] = {'\0'};
 
 static int param_message_get(char *buffer, const struct kernel_param *kp)
 {
@@ -70,8 +72,8 @@ static const struct kernel_param_ops message_ops = {
     .set = param_message_set,
 };
 
-module_param_cb(message, &message_ops, g_message, 0644);
-MODULE_PARM_DESC(message, "Параметр message");
+module_param_cb(my_str, &message_ops, g_message, 0444);
+MODULE_PARM_DESC(my_str, "Параметр message");
 
 
 
@@ -99,19 +101,19 @@ static const struct kernel_param_ops ch_ops = {
     .set = param_set_char,
 };
 
-module_param_cb(ch, &ch_ops, &g_index_message, 0200);
-MODULE_PARM_DESC(ch, "Символьный параметр для записи по индексу");
+module_param_cb(ch_val, &ch_ops, &g_index_message, 0200);
+MODULE_PARM_DESC(ch_val, "Символьный параметр для записи по индексу");
 
 
 
 static int __init mod_init(void) {
     g_message[MAX_INDEX_STR] = 0;
-    pr_info("Модуль загружен. Текущее значение message: %s\n", g_message);
+    pr_info(": init\n");
     return 0;
 }
 
 static void __exit mod_exit(void) {
-    pr_info("Модуль выгружен\n");
+    pr_info(": exit\n");
 }
 
 module_init(mod_init);

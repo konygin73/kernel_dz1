@@ -2,12 +2,20 @@ PWD := $(shell pwd)
 KERNEL_DIR ?= /lib/modules/$(shell uname -r)/build
 
 DRV_NAME := my_module
-obj-m := $(DRV_NAME).o
 
-.PHONY: build run remove install uninstall clean
+#CLANG_FORMAT_VERS ?= 14
+#CLANG_FORMAT := clang-format-$(CLANG_FORMAT_VERS)
+CLANG_FORMAT_FLAGS += -i
+#FORMAT_FILES := $(SRC_DIR)/*.c
+
+.PHONY: build run remove install uninstall clean format
 
 build:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules
+
+format:
+	@echo "Форматирование исходного кода с помощью clang-format..."
+	clang-format $(CLANG_FORMAT_FLAGS) *.c
 
 run:
 	insmod $(PWD)/$(DRV_NAME).ko
@@ -17,15 +25,17 @@ remove:
 
 install:
 	cp $(DRV_NAME).ko /lib/modules/$(shell uname -r)
-	cp $(DRV_NAME).conf /etc/modprobe.d/
 	depmod -a
 	modprobe $(DRV_NAME)
 
 uninstall:
 	modprobe -r $(DRV_NAME)
 	rm /lib/modules/$(shell uname -r)/$(DRV_NAME).ko
-	rm /etc/modprobe.d/$(DRV_NAME).conf
 	depmod -a
 
 clean:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) clean
+
+check:
+	@echo "Запуск проверочного скрипта check.sh..."
+	./check.sh
